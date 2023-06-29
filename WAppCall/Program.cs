@@ -83,7 +83,7 @@ namespace WAppCall
                 Console.WriteLine("Возможно необходимо залогиниться и отсканировать QR Code");
             }
             _rootOfCall = AutomationElement.RootElement.FindFirst(TreeScope.Children,
-                new PropertyCondition(AutomationElement.NameProperty, "Аудиозвонок - WhatsApp"));
+                new PropertyCondition(AutomationElement.NameProperty, WhatsAppUI.Ru.VoiceCallTitle));
 
             if ( _rootOfCall != null )
             {
