@@ -57,27 +57,48 @@ namespace WAppCall
                 Environment.Exit(1);
             }
             string phoneNumber = args[0];
+            // Запускаем процесс с приложением WhatsApp
             _ = Process.Start($"whatsapp://send?phone={phoneNumber}");
             Thread.Sleep(1000);
-            _root = AutomationElement.RootElement
-                    .FindFirst(TreeScope.Children, new PropertyCondition(AutomationElement.NameProperty, "WhatsApp"));
-            PushButton(WhatsAppUI.Ru.VoiceCallButton);
-            Thread.Sleep(1000);
-            _rootOfCall = AutomationElement.RootElement
-                    .FindFirst(TreeScope.Children, new PropertyCondition(AutomationElement.NameProperty, "Аудиозвонок - WhatsApp"));
+
+            // Ищем главное окно приложения
+            _root = AutomationElement.RootElement.FindFirst(TreeScope.Children,
+                new PropertyCondition(AutomationElement.NameProperty, "WhatsApp"));
+
+            if (_root == null)
+            {
+                Console.WriteLine("Приложение не установлено или не запущено.");
+                Environment.Exit(1);
+            }
+
+            try
+            {
+
+                PushButton(WhatsAppUI.Ru.VoiceCallButton);
+                Thread.Sleep(1000);
+            }
+            catch (ArgumentException ex)
+            {
+                Console.WriteLine(ex.Message);
+                Console.WriteLine("Возможно необходимо залогиниться и отсканировать QR Code");
+            }
+            _rootOfCall = AutomationElement.RootElement.FindFirst(TreeScope.Children,
+                new PropertyCondition(AutomationElement.NameProperty, "Аудиозвонок - WhatsApp"));
+
             if ( _rootOfCall != null )
             {
                 Console.WriteLine($"Идет набор телефонного номера: {phoneNumber}");
-                //Automation.AddStructureChangedEventHandler(_rootOfCall, TreeScope.Descendants, OnStructureChange);
 
-                var participants = _rootOfCall.FindFirst(TreeScope.Descendants, new PropertyCondition(AutomationElement.AutomationIdProperty, "ParticipantList"));
+                var participants = _rootOfCall.FindFirst(TreeScope.Descendants,
+                    new PropertyCondition(AutomationElement.AutomationIdProperty, "ParticipantList"));
+
+                // Добавим событие для анализа поднял ли трубку клиент
                 if (participants != null )
                 {
-                    Automation.AddStructureChangedEventHandler(participants, TreeScope.Children, OnStructureChange);
-                
+                    Automation.AddStructureChangedEventHandler(participants, TreeScope.Children, OnStructureChange);                
                 }
 
-                //WindowPattern.WindowClosedEvent
+                // Добавим событие закрытия окна вызова / окончания звонка
                 Automation.AddAutomationEventHandler(WindowPattern.WindowClosedEvent, _rootOfCall, TreeScope.Element,
                          UIAeventHandler = new AutomationEventHandler(OnUIAutomationEvent));
 
@@ -90,7 +111,8 @@ namespace WAppCall
             var callWindow = (AutomationElement)sender;
             if (!_isInCall)
             {
-                Console.WriteLine($"По всей видимости взяли  трубку...{e.EventId.Id}, {callWindow.Current.AutomationId}, {callWindow.Current.Name}");
+                Console.WriteLine($"По всей видимости взяли  трубку...{e.EventId.Id}, " +
+                    $"{callWindow.Current.AutomationId}, {callWindow.Current.Name}");
                 _isInCall = true;
             }
             //Remove hanler
@@ -119,6 +141,10 @@ namespace WAppCall
                 // TODO Handle any other events that have been subscribed to.
             }
         }
+
+
+
+
 
         protected static InvokePattern GetInvokePattern(AutomationElement element)
         {
