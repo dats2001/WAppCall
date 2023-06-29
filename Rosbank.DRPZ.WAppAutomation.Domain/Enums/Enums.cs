@@ -15,6 +15,7 @@ namespace Rosbank.DRPZ.WAppAutomation.Domain.Enums
 
     public enum WAppCallStatus
     {
+        Free,
         Calling,
         VoiceInteraction,
         CallFinished

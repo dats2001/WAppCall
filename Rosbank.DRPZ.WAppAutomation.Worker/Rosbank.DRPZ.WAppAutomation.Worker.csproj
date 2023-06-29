@@ -1,7 +1,7 @@
-<Project Sdk="Microsoft.NET.Sdk.Worker">
+﻿<Project Sdk="Microsoft.NET.Sdk.Worker">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net6.0-windows10.0.22000</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>dotnet-Rosbank.DRPZ.WAppAutomation.Worker-15665463-ac03-445b-8bbd-8e3e80e29498</UserSecretsId>
@@ -12,5 +12,10 @@
     <PackageReference Include="Serilog.Extensions.Hosting" Version="7.0.0" />
     <PackageReference Include="Serilog.Sinks.Console" Version="4.1.0" />
     <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Rosbank.DRPZ.WAppAutomation.Application\Rosbank.DRPZ.WAppAutomation.Application.csproj" />
+    <ProjectReference Include="..\Rosbank.DRPZ.WAppAutomation.Domain\Rosbank.DRPZ.WAppAutomation.Domain.csproj" />
   </ItemGroup>
 </Project>

@@ -1,10 +1,10 @@
 namespace Rosbank.DRPZ.WAppAutomation.Worker
 {
-    public class Worker : BackgroundService
+    public class WAppClientCallWorker : BackgroundService
     {
-        private readonly ILogger<Worker> _logger;
+        private readonly ILogger<WAppClientCallWorker> _logger;
 
-        public Worker(ILogger<Worker> logger)
+        public WAppClientCallWorker(ILogger<WAppClientCallWorker> logger)
         {
             _logger = logger;
         }
@@ -14,7 +14,9 @@ namespace Rosbank.DRPZ.WAppAutomation.Worker
             while (!stoppingToken.IsCancellationRequested)
             {
                 _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
-                await Task.Delay(1000, stoppingToken);
+
+                await Task.Delay(30000, stoppingToken);
+                return;
             }
         }
     }

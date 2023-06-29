@@ -10,7 +10,7 @@ public interface IWAppDesktopClient
 {
     public string Phone { get; set; }
 
-    public event Func<WAppCallEventArgs, Task> CallStatusCahnged;
+    public event Func<WAppCallEventArgs, Task> CallStatusChanged;
 
 
     public Task Call(string phone);
@@ -75,11 +75,11 @@ public class WAppDesktopClient : IWAppDesktopClient
     }
 
 
-    public event Func<WAppCallEventArgs, Task> CallStatusCahnged;
+    public event Func<WAppCallEventArgs, Task> CallStatusChanged;
 
     public async Task OnCallStatusChanged(WAppCallEventArgs args)
     {
-        Func<WAppCallEventArgs, Task> handler = CallStatusCahnged;
+        Func<WAppCallEventArgs, Task> handler = CallStatusChanged;
         if (handler == null)
             return;
 

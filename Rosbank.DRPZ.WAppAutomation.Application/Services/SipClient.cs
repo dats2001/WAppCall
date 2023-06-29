@@ -13,7 +13,7 @@ public interface ISipClient
     /// <summary>
     /// Проверка на активность звонка
     /// </summary>
-    public bool IsCallActive { get; }
+    bool IsCallActive { get; }
 
     /// <summary>
     /// Позвонить

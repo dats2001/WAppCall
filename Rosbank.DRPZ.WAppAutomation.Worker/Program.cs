@@ -15,8 +15,9 @@ IHost host = Host.CreateDefaultBuilder(args)
     .ConfigureServices((context, services) =>
     {
         var configuration = context.Configuration;
+        services.AddApplicationServices();
+        services.AddHostedService<WAppClientCallWorker>();
         
-        services.AddHostedService<Worker>();
     })
     .UseSerilog((context, services, configuration) =>
     {
