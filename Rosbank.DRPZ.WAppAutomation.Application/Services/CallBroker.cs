@@ -13,7 +13,7 @@ namespace Rosbank.DRPZ.WAppAutomation.Application.Services
     {
         Task WAppCallStatusChanged(WAppCallEventArgs args);
 
-        Task Call();
+        Task Call(string phoneNumber);
     
     }
     public class CallBroker : ICallBroker
@@ -33,9 +33,9 @@ namespace Rosbank.DRPZ.WAppAutomation.Application.Services
             _desktopClient.CallStatusChanged += WAppCallStatusChanged;
         }
 
-        public async Task Call()
+        public async Task Call(string phoneNumber)
         {
-            await _desktopClient.Call("+79119115650");
+            await _desktopClient.Call(phoneNumber);
             while (callStatus != WAppCallStatus.CallFinished)
             {
                 await Task.Delay(1000);
@@ -47,7 +47,7 @@ namespace Rosbank.DRPZ.WAppAutomation.Application.Services
         {
             if (arg.Status == Domain.Enums.WAppCallStatus.Calling)
             {
-                await _sipClient.CallAsync("300");
+                await _sipClient.CallAsync("7777");
                 callStatus = WAppCallStatus.Calling;
             }
             else if (arg.Status == Domain.Enums.WAppCallStatus.CallFinished)

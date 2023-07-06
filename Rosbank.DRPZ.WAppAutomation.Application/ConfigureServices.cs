@@ -7,6 +7,7 @@ public static class ConfigureServices
     {
         services.AddSingleton<ISipClient, SipClient>();
         services.AddSingleton<IWAppDesktopClient, WAppDesktopClient>();
+        services.AddSingleton<ICallBroker, CallBroker>();
 
         return services;
     }

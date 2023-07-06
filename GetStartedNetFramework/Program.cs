@@ -1,44 +1,37 @@
-﻿using Serilog;
-using Serilog.Extensions.Logging;
+﻿//-----------------------------------------------------------------------------
+// Filename: Program.cs
+//
+// Description: A getting started program to demonstrate how to use the SIPSorcery
+// library to place a call targeting the .Net Framework.
+//
+// Author(s):
+// Aaron Clauson (aaron@sipsorcery.com)
+//
+// History:
+// 17 Apr 2020 Aaron Clauson	Created, Dublin, Ireland.
+//
+// License: 
+// BSD 3-Clause "New" or "Revised" License, see included LICENSE.md file.
+//-----------------------------------------------------------------------------
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Automation;
-using WhatsAppUI;
+using Serilog;
+using Serilog.Extensions.Logging;
+using SIPSorcery.Media;
+using SIPSorcery.Net;
+using SIPSorcery.SIP;
+using SIPSorcery.SIP.App;
+using SIPSorceryMedia.Abstractions;
+using SIPSorceryMedia.Windows;
 
-namespace WAppCall
+namespace demo
 {
-    public static class WhatsAppUI
-    {
-        public static class Ru
-        {
-            public static string NewChatButton = "NewConvoButton";
-            public static string VoiceCallButton = "Аудиозвонок";
-            public static string QueryTextBox = "QueryTextBox";
-            public static string GetStarted = "Начать";
-            public static string QrImage = "QrImage";
-            public static string Settings = "Открыть Настройки";
-            public static string LogOut = "Выйти";
-            public static string Yes = "Да";
-            public static string Ok = "ОК";
-            public static string VoiceCallTitle = "Аудиозвонок - WhatsApp";
-            public static string Calling = "Соединение...";
-            public static string CallStatusTextId = "CallStatusText";
-            public static string PopupBoxName = "Всплывающее окно";
-            public static string PopupBoxTextId = "Message";
-            public static string CallEndStatusText = "Звонок завершён";
-        }
-    }
-
-    public static class SIPConstants
-    {
-        public const string SIP_DEFAULT_USERNAME = "Nikita";
-        public const string SIP_DEFAULT_FROMURI = "sip:from_code@goodboy";
-        public const string SDP_MIME_CONTENTTYPE = "application/sdp";
-        public const ushort DEFAULT_SIP_PORT = 5060;
-    }
-    internal class Program
+    class Program
     {
         protected static Process _process;
         protected static AutomationElement _root;
@@ -46,16 +39,25 @@ namespace WAppCall
         private static Dictionary<string, AutomationElement> _elements = new Dictionary<string, AutomationElement>();
         private static bool _isInCall = false;
         private static AutomationEventHandler UIAeventHandler;
+        private static string DESTINATION = "7777@178.154.207.15:5060";
 
-        static void Main(string[] args)
+        private static SIPTransport sipTransport;
+        private static SIPUserAgent userAgent;
+        private static WindowsAudioEndPoint winAudio;
+        private static VoIPMediaSession voipMediaSession;
+
+        static async Task Main()
         {
-            if (args == null || args.Length==0 )
-            {
-                Environment.Exit(1);
-            }
+            Console.WriteLine("SIPSorcery Getting Started Demo");
+
             AddConsoleLogger();
 
-            string phoneNumber = args[0];
+            string phoneNumber = "+79119115650";
+            sipTransport = new SIPTransport();
+            userAgent = new SIPUserAgent(sipTransport, null);
+            winAudio = new WindowsAudioEndPoint(new AudioEncoder(),0,0);
+            voipMediaSession = new VoIPMediaSession(new MediaEndPoints { AudioSink = winAudio, AudioSource = winAudio });
+
             // Запускаем процесс с приложением WhatsApp
             _process = new Process();
             ProcessStartInfo startInfo = new ProcessStartInfo();
@@ -64,8 +66,7 @@ namespace WAppCall
             startInfo.Arguments = $"/C start whatsapp://send?phone={phoneNumber}";
             _process.StartInfo = startInfo;
             _process.Start();
-
-            _ = Process.Start($"whatsapp://send?phone={phoneNumber}");
+            
             Thread.Sleep(1000);
 
             // Ищем главное окно приложения
@@ -81,7 +82,7 @@ namespace WAppCall
             try
             {
 
-                PushButton(WhatsAppUI.Ru.VoiceCallButton);
+                PushButton("Аудиозвонок");
                 Thread.Sleep(1000);
             }
             catch (ArgumentException ex)
@@ -92,7 +93,7 @@ namespace WAppCall
             _rootOfCall = AutomationElement.RootElement.FindFirst(TreeScope.Children,
                 new PropertyCondition(AutomationElement.NameProperty, "Аудиозвонок - WhatsApp"));
 
-            if ( _rootOfCall != null )
+            if (_rootOfCall != null)
             {
                 Console.WriteLine($"Идет набор телефонного номера: {phoneNumber}");
 
@@ -100,9 +101,9 @@ namespace WAppCall
                     new PropertyCondition(AutomationElement.AutomationIdProperty, "ParticipantList"));
 
                 // Добавим событие для анализа поднял ли трубку клиент
-                if (participants != null )
+                if (participants != null)
                 {
-                    Automation.AddStructureChangedEventHandler(participants, TreeScope.Children, OnStructureChange);                
+                    Automation.AddStructureChangedEventHandler(participants, TreeScope.Children, OnStructureChange);
                 }
 
                 // Добавим событие закрытия окна вызова / окончания звонка
@@ -111,7 +112,12 @@ namespace WAppCall
 
             }
             Console.ReadLine();
+
+
+
+            
         }
+
 
         private static async void OnStructureChange(object sender, StructureChangedEventArgs e)
         {
@@ -121,8 +127,23 @@ namespace WAppCall
                 Console.WriteLine($"По всей видимости взяли  трубку...{e.EventId.Id}, " +
                     $"{callWindow.Current.AutomationId}, {callWindow.Current.Name}");
                 _isInCall = true;
-                var c = new SipClient();
-                await c.CallAsync("xxx");
+
+
+                // Place the call and wait for the result.
+                bool callResult = await userAgent.Call(DESTINATION, null, null, voipMediaSession);
+                Console.WriteLine($"Call result {((callResult) ? "success" : "failure")}.");
+
+                Console.WriteLine("press any key to exit...");
+                Console.Read();
+
+                if (userAgent.IsCallActive)
+                {
+                    Console.WriteLine("Hanging up.");
+                    userAgent.Hangup();
+                }
+
+                // Clean up.
+                sipTransport.Shutdown();
             }
             //Remove hanler
             Automation.RemoveStructureChangedEventHandler((AutomationElement)sender, OnStructureChange);
@@ -180,6 +201,9 @@ namespace WAppCall
             return result;
         }
 
+        /// <summary>
+        ///  Adds a console logger. Can be omitted if internal SIPSorcery debug and warning messages are not required.
+        /// </summary>
         private static void AddConsoleLogger()
         {
             var serilogLogger = new LoggerConfiguration()

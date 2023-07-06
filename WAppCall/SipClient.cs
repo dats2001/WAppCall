@@ -1,10 +1,12 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System;
+using System.Threading.Tasks;
+using Serilog;
+using Serilog.Extensions.Logging;
 using SIPSorcery.Media;
 using SIPSorcery.SIP;
 using SIPSorcery.SIP.App;
 using SIPSorceryMedia.Abstractions;
 using SIPSorceryMedia.Windows;
-using System.Threading.Tasks;
 
 namespace WhatsAppUI
 {
@@ -50,20 +52,16 @@ namespace WhatsAppUI
         private readonly SIPUserAgent _userAgent;
         private readonly VoIPMediaSession _voIPMediaSession;
 
-        private readonly IConfiguration _configuration;
-        private readonly ILogger _logger;
-
-        public SipClient(IConfiguration configuration, ILoggerFactory loggerFactory)
+        public SipClient()
         {
-            _configuration = configuration;
-            _logger = loggerFactory.CreateLogger<SipClient>();
 
             //Инициализируем все окружение для звонка
 
             _transport = new SIPTransport();
             _userAgent = new SIPUserAgent(_transport, null);
-            _winAudio = new WindowsAudioEndPoint(new AudioEncoder());
+            _winAudio = new WindowsAudioEndPoint(new AudioEncoder(), 0, 0);
             _voIPMediaSession = new VoIPMediaSession(new MediaEndPoints { AudioSink = _winAudio, AudioSource = _winAudio });
+
         }
 
         public bool IsCallActive
@@ -90,10 +88,8 @@ namespace WhatsAppUI
 
         public async Task<bool> CallAsync(string ext)
         {
-            string sipTrankUrl = _configuration["Worker:Sip:Uri"];
-            string sipLogin = _configuration["Worker:Sip:UserName"];
-            string sipPassword = _configuration["Worker:Sip:Password"];
-            return await _userAgent.Call(sipTrankUrl, sipLogin, sipPassword, _voIPMediaSession);
+            string sipTrankUrl = "7777@175.154.207.15:5060";
+            return await _userAgent.Call(sipTrankUrl, null, null, _voIPMediaSession);
         }
 
         public async Task<bool> HangUp()

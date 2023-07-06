@@ -55,7 +55,17 @@ public class WAppDesktopClient : IWAppDesktopClient
 
     private void StartWhatsAppApplication(string appName, string rootElement, int timeoutInMs = 7000)
     {
-        _process = Process.Start(appName);
+        //_process = Process.Start(appName);
+
+
+        _process = new Process();
+         ProcessStartInfo startInfo = new ProcessStartInfo();
+        startInfo.WindowStyle = ProcessWindowStyle.Hidden;
+        startInfo.FileName = "cmd.exe";
+        startInfo.Arguments = "/C start " + appName;
+        _process.StartInfo = startInfo;
+        _process.Start();
+
         do
         {
             _root = AutomationElement.RootElement

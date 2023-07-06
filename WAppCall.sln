@@ -3,11 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.6.33815.320
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rosbank.DRPZ.WAppAutomation.Domain", "Rosbank.DRPZ.WAppAutomation.Domain\Rosbank.DRPZ.WAppAutomation.Domain.csproj", "{3518F313-DF85-444B-82E4-D4C4EA6C7B31}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rosbank.DRPZ.WAppAutomation.Domain", "Rosbank.DRPZ.WAppAutomation.Domain\Rosbank.DRPZ.WAppAutomation.Domain.csproj", "{3518F313-DF85-444B-82E4-D4C4EA6C7B31}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rosbank.DRPZ.WAppAutomation.Worker", "Rosbank.DRPZ.WAppAutomation.Worker\Rosbank.DRPZ.WAppAutomation.Worker.csproj", "{0D0B8FAC-CD0D-4330-9308-2D4DF9FEEED6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rosbank.DRPZ.WAppAutomation.Worker", "Rosbank.DRPZ.WAppAutomation.Worker\Rosbank.DRPZ.WAppAutomation.Worker.csproj", "{0D0B8FAC-CD0D-4330-9308-2D4DF9FEEED6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rosbank.DRPZ.WAppAutomation.Application", "Rosbank.DRPZ.WAppAutomation.Application\Rosbank.DRPZ.WAppAutomation.Application.csproj", "{D34FB43A-A47B-4002-A1CC-23752F91D91F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rosbank.DRPZ.WAppAutomation.Application", "Rosbank.DRPZ.WAppAutomation.Application\Rosbank.DRPZ.WAppAutomation.Application.csproj", "{D34FB43A-A47B-4002-A1CC-23752F91D91F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WAppCall", "WAppCall\WAppCall.csproj", "{9D32F993-BD43-4251-B12E-42A9BCD76CE2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,6 +29,10 @@ Global
 		{D34FB43A-A47B-4002-A1CC-23752F91D91F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D34FB43A-A47B-4002-A1CC-23752F91D91F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D34FB43A-A47B-4002-A1CC-23752F91D91F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9D32F993-BD43-4251-B12E-42A9BCD76CE2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9D32F993-BD43-4251-B12E-42A9BCD76CE2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9D32F993-BD43-4251-B12E-42A9BCD76CE2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9D32F993-BD43-4251-B12E-42A9BCD76CE2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
