@@ -54,38 +54,22 @@ public class SipClient : ISipClient
     private readonly SIPTransport _transport;
     private readonly WindowsAudioEndPoint _winAudio;
     private readonly SIPUserAgent _userAgent;
-    private VoIPMediaSession _voIPMediaSession;
+    private readonly VoIPMediaSession _voIPMediaSession;
 
     private readonly IConfiguration _configuration;
     private readonly ILogger _logger;
-
-    public event Action<ISipClient> CallAnswer;
-    public event Action<ISipClient> RemotePutOnHold;
-    public event Action<ISipClient> RemoteTookOffHold;
-
-    private static string _sdpMimeContentType = SDP.SDP_MIME_CONTENTTYPE;
-    private CancellationTokenSource _cts = new CancellationTokenSource();
 
     public SipClient(IConfiguration configuration, ILoggerFactory loggerFactory)
     {
         _configuration = configuration;
         _logger = loggerFactory.CreateLogger<SipClient>();
 
-        //Инициализируем все окружение для звонка
+        SIPSorcery.LogFactory.Set(loggerFactory);
 
         _transport = new SIPTransport();
         _userAgent = new SIPUserAgent(_transport, null);
-
-        _userAgent.ClientCallTrying += CallTrying;
-        _userAgent.ClientCallRinging += CallRinging;
-        _userAgent.ClientCallAnswered += CallAnswered;
-        _userAgent.ClientCallFailed += CallFailed;
-        _userAgent.OnCallHungup += CallFinished;
-        _userAgent.ServerCallCancelled += IncomingCallCancelled;
-
-
-        //_winAudio = new WindowsAudioEndPoint(new AudioEncoder());
-        //_voIPMediaSession = new VoIPMediaSession(new MediaEndPoints { AudioSink = _winAudio, AudioSource = _winAudio });    
+        _winAudio = new WindowsAudioEndPoint(new AudioEncoder());
+        _voIPMediaSession = new VoIPMediaSession(new MediaEndPoints { AudioSink = _winAudio, AudioSource = _winAudio });    
     }
 
     public bool IsCallActive
@@ -105,73 +89,33 @@ public class SipClient : ISipClient
 
     public async Task CallAndHold(string ext)
     {
-        await CallAsync(ext);
-        _userAgent.PutOnHold();        
+        bool CallResult = await CallAsync(ext);
+        _userAgent.PutOnHold();
+        return CallResult;
     }
 
     public async Task CallAsync(string ext)
     {
+        //Инициализируем все окружение для звонка
+
+        _transport = new SIPTransport();
+        _userAgent = new SIPUserAgent(_transport, null);
+        _winAudio = new WindowsAudioEndPoint(new AudioEncoder(), -1);
+        _voIPMediaSession = new VoIPMediaSession(new MediaEndPoints { AudioSink = _winAudio, AudioSource = _winAudio });
+
+        _userAgent.ClientCallTrying += CallTrying;
+        _userAgent.ClientCallRinging += CallRinging;
+        _userAgent.ClientCallAnswered += CallAnswered;
+        _userAgent.ClientCallFailed += CallFailed;
+        _userAgent.OnCallHungup += CallFinished;
+        _userAgent.ServerCallCancelled += IncomingCallCancelled;
+
+
+        
         string sipTrankUrl = _configuration["Worker:Sip:Uri"];
         string sipLogin = _configuration["Worker:Sip:UserName"];
         string sipPassword = _configuration["Worker:Sip:Password"];
-
-        // This call will use the pre-configured SIP account.
-        var callURI = SIPURI.ParseSIPURIRelaxed(sipTrankUrl);
-        string fromHeader = (new SIPFromHeader("100", new SIPURI(sipLogin, "175.154.207.15", null), null)).ToString();
-
-        _logger.LogInformation($"Starting call to {callURI}.");
-
-        var dstEndpoint = await SIPDns.ResolveAsync(callURI, false, _cts.Token);
-
-        if (dstEndpoint == null)
-        {
-            _logger.LogInformation($"Call failed, could not resolve {callURI}.");
-        }
-        else
-        {
-            _logger.LogInformation($"Call progressing, resolved {callURI} to {dstEndpoint}.");
-            System.Diagnostics.Debug.WriteLine($"DNS lookup result for {callURI}: {dstEndpoint}.");
-            SIPCallDescriptor callDescriptor = new SIPCallDescriptor(sipLogin, sipPassword, callURI.ToString(), fromHeader, null, null, null, null, SIPCallDirection.Out, _sdpMimeContentType, null, null);
-
-            _voIPMediaSession = CreateMediaSession();
-
-            _userAgent.RemotePutOnHold += OnRemotePutOnHold;
-            _userAgent.RemoteTookOffHold += OnRemoteTookOffHold;
-
-            await _userAgent.InitiateCallAsync(callDescriptor, _voIPMediaSession);
-        }
-
-        //return await _userAgent.Call(sipTrankUrl, sipLogin, sipPassword, _voIPMediaSession);
-    }
-
-    /// <summary>
-    /// Creates the media session to use with the SIP call.
-    /// </summary>
-    /// <param name="audioSrcOpts">The audio source options to set when the call is first
-    /// answered. These options can be adjusted afterwards to do things like put play
-    /// on hold music etc.</param>
-    /// <returns>A new media session object.</returns>
-    private VoIPMediaSession CreateMediaSession()
-    {
-        var outDevIndex = _configuration["Worker:Sip:AudioOutDeviceIndex"];
-        var windowsAudioEndPoint = new WindowsAudioEndPoint(new AudioEncoder(), -1);
-        var windowsVideoEndPoint = new WindowsVideoEndPoint(new VpxVideoEncoder());
-
-        MediaEndPoints mediaEndPoints = new MediaEndPoints
-        {
-            AudioSink = windowsAudioEndPoint,
-            AudioSource = windowsAudioEndPoint,
-            VideoSink = windowsVideoEndPoint,
-            VideoSource = windowsVideoEndPoint,
-        };
-
-        // Fallback video source if a Windows webcam cannot be accessed.
-        var testPatternSource = new VideoTestPatternSource(new VpxVideoEncoder());
-
-        var voipMediaSession = new VoIPMediaSession(mediaEndPoints, testPatternSource);
-        voipMediaSession.AcceptRtpFromAny = true;
-
-        return voipMediaSession;
+        return await _userAgent.Call(sipTrankUrl, sipLogin, sipPassword, _voIPMediaSession);
     }
 
     public async Task HangUp()
@@ -260,5 +204,4 @@ public class SipClient : ISipClient
     {
         RemoteTookOffHold?.Invoke(this);
     }
-
 }
