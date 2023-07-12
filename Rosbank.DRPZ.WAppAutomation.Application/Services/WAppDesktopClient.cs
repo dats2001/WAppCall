@@ -1,24 +1,11 @@
 ﻿using Microsoft.Extensions.Logging;
 using Rosbank.DRPZ.WAppAutomation.Domain.EventArgs;
+using Rosbank.DRPZ.WAppAutomation.Domain.Interfaces;
 using System.Diagnostics;
 using System.Windows.Automation;
-using System.Windows.Navigation;
 
 namespace Rosbank.DRPZ.WAppAutomation.Application.Services;
 
-public interface IWAppDesktopClient
-{
-    public string Phone { get; set; }
-
-    public event Func<WAppCallEventArgs, Task> CallStatusChanged;
-
-
-    public Task Call(string phone);
-
-
-
-    public Task OnCallStatusChanged(WAppCallEventArgs args);
-}
 
 public class WAppDesktopClient : IWAppDesktopClient
 {
@@ -112,7 +99,6 @@ public class WAppDesktopClient : IWAppDesktopClient
 
             try
             {
-
                 PushButton(WhatsAppUI.RuName.VoiceCallButton);
                 Thread.Sleep(1000);
             }
@@ -126,13 +112,14 @@ public class WAppDesktopClient : IWAppDesktopClient
 
             if (_rootOfCall != null)
             {
-                OnCallStatusChanged(new WAppCallEventArgs
+                await OnCallStatusChanged(new WAppCallEventArgs
                 {
                     PhoneNumber = this.Phone,
                     Status = Domain.Enums.WAppCallStatus.Calling,
                     StartDate = DateTime.MinValue,
                     Duration = TimeSpan.FromSeconds(0)
                 });
+
                 _logger.LogInformation($"Идет набор телефонного номера: {phone}");
 
                 var participants = _rootOfCall.FindFirst(TreeScope.Descendants,
@@ -165,6 +152,7 @@ public class WAppDesktopClient : IWAppDesktopClient
                 $"{callWindow.Current.AutomationId}, {callWindow.Current.Name}");
 
             StartInteraction = DateTime.Now;
+            
             OnCallStatusChanged(new WAppCallEventArgs
             {
                 PhoneNumber = this.Phone,
@@ -198,7 +186,7 @@ public class WAppDesktopClient : IWAppDesktopClient
                 PhoneNumber = this.Phone,
                 Status = Domain.Enums.WAppCallStatus.CallFinished,
                 StartDate = StartInteraction,
-                Duration = TimeSpan.FromSeconds((DateTime.Now - StartInteraction).TotalMilliseconds)    
+                Duration = (StartInteraction==DateTime.MinValue) ? TimeSpan.Zero : TimeSpan.FromSeconds((DateTime.Now - StartInteraction).TotalMilliseconds)    
             });
             _logger.LogInformation("Звонок завершен!");
         }

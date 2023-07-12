@@ -1,4 +1,5 @@
 using Rosbank.DRPZ.WAppAutomation.Application.Services;
+using Rosbank.DRPZ.WAppAutomation.Domain.Interfaces;
 
 namespace Rosbank.DRPZ.WAppAutomation.Worker
 {
@@ -6,26 +7,27 @@ namespace Rosbank.DRPZ.WAppAutomation.Worker
     {
         private readonly ILogger<WAppClientCallWorker> _logger;
         private readonly ICallBroker _callBroker;
-        private readonly ISipClient _sipClient;
 
-        public WAppClientCallWorker(ICallBroker callBroker, ISipClient sipClient, ILogger<WAppClientCallWorker> logger)
+        public WAppClientCallWorker(ICallBroker callBroker, ILogger<WAppClientCallWorker> logger)
         {
             _callBroker = callBroker;
-            _sipClient = sipClient;
             _logger = logger;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
+            _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
             while (!stoppingToken.IsCancellationRequested)
             {
-                _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
+                // Coonect to servers with calling tasks
+                // Report broker status // free, in a call, not logged in
 
-                //await _callBroker.Call("+79119115650");
-                await _sipClient.CallAsync("7777");
+                // check for call queue, get number and make WhatsApp call
+                await _callBroker.CallWhatsAppNumber("+79119115650");
+                // Report call status
 
-                await Task.Delay(30000, stoppingToken);
-                return;
+                await Task.Delay(35000, stoppingToken);
+                //return;
             }
         }
     }

@@ -9,13 +9,17 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="7.0.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="7.0.0" />
-    <PackageReference Include="SIPSorcery" Version="6.0.12" />
-    <PackageReference Include="SIPSorceryMedia.Windows" Version="6.0.3-pre" />
-    <PackageReference Include="SIPSorceryMedia.Encoders" Version="0.0.10-pre" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="5.0.0" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="4.1.0" />
+    <PackageReference Include="Serilog.Sinks.Debug" Version="2.0.0" />
+	<PackageReference Include="Serilog.Extensions.Logging" Version="3.0.1" />
+	<PackageReference Include="SIPSorcery" Version="6.0.6" />
+	<PackageReference Include="SIPSorceryMedia.Encoders" Version="0.0.10-pre" />
+	<PackageReference Include="SIPSorceryMedia.Windows" Version="6.0.1-pre" />
   </ItemGroup>
 
 	<ItemGroup>
-		<FrameworkReference Include="Microsoft.WindowsDesktop.App"/>
+		<FrameworkReference Include="Microsoft.WindowsDesktop.App" />
 	</ItemGroup>
 	
   <ItemGroup>

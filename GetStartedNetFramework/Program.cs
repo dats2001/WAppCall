@@ -17,9 +17,11 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Automation;
+using NAudio.Wave;
 using Serilog;
 using Serilog.Extensions.Logging;
 using SIPSorcery.Media;
@@ -46,17 +48,35 @@ namespace demo
         private static WindowsAudioEndPoint winAudio;
         private static VoIPMediaSession voipMediaSession;
 
+        private static readonly WaveFormat _waveFormat = new WaveFormat(8000, 16, 1);
+        private static WaveFileWriter _waveFile;
+
+
         static async Task Main()
         {
             Console.WriteLine("SIPSorcery Getting Started Demo");
 
             AddConsoleLogger();
 
+            _waveFile = new WaveFileWriter("output.mp3", _waveFormat);
+
             string phoneNumber = "+79119115650";
             sipTransport = new SIPTransport();
             userAgent = new SIPUserAgent(sipTransport, null);
-            winAudio = new WindowsAudioEndPoint(new AudioEncoder(),0,0);
+
+            userAgent.ClientCallFailed += (uac, err, resp) =>
+            {
+                Console.WriteLine($"Call failed {err}");
+                _waveFile?.Close();
+            };
+            userAgent.OnCallHungup += (dialog) => _waveFile?.Close();
+
+            winAudio = new WindowsAudioEndPoint(new AudioEncoder(),-1);
+
+            
+
             voipMediaSession = new VoIPMediaSession(new MediaEndPoints { AudioSink = winAudio, AudioSource = winAudio });
+            voipMediaSession.OnRtpPacketReceived += OnRtpPacketReceived;
 
             // Запускаем процесс с приложением WhatsApp
             _process = new Process();
@@ -116,6 +136,30 @@ namespace demo
 
 
             
+        }
+
+        private static void OnRtpPacketReceived(IPEndPoint remoteEndPoint, SDPMediaTypesEnum mediaType, RTPPacket rtpPacket)
+        {
+            if (mediaType == SDPMediaTypesEnum.audio)
+            {
+                var sample = rtpPacket.Payload;
+
+                for (int index = 0; index < sample.Length; index++)
+                {
+                    if (rtpPacket.Header.PayloadType == (int)SDPWellKnownMediaFormatsEnum.PCMA)
+                    {
+                        short pcm = NAudio.Codecs.ALawDecoder.ALawToLinearSample(sample[index]);
+                        byte[] pcmSample = new byte[] { (byte)(pcm & 0xFF), (byte)(pcm >> 8) };
+                        _waveFile.Write(pcmSample, 0, 2);
+                    }
+                    else
+                    {
+                        short pcm = NAudio.Codecs.MuLawDecoder.MuLawToLinearSample(sample[index]);
+                        byte[] pcmSample = new byte[] { (byte)(pcm & 0xFF), (byte)(pcm >> 8) };
+                        _waveFile.Write(pcmSample, 0, 2);
+                    }
+                }
+            }
         }
 
 
