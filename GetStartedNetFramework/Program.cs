@@ -16,6 +16,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Diagnostics;
 using System.Net;
 using System.Threading;
@@ -48,6 +49,8 @@ namespace demo
         private static WindowsAudioEndPoint winAudio;
         private static VoIPMediaSession voipMediaSession;
 
+        private static SoftphoneSTUNClient _stunClient;                    // STUN client to periodically check the public IP address.
+
         private static readonly WaveFormat _waveFormat = new WaveFormat(8000, 16, 1);
         private static WaveFileWriter _waveFile;
 
@@ -62,6 +65,9 @@ namespace demo
                 Environment.Exit(1);
             }
 
+            string stunServer = ConfigurationManager.AppSettings["StunServer"];
+            bool preferIpv6 = Convert.ToBoolean(ConfigurationManager.AppSettings["PreferIPv6"]);
+
             AddConsoleLogger();
 
             _waveFile = new WaveFileWriter("output.mp3", _waveFormat);
@@ -69,6 +75,9 @@ namespace demo
             string phoneNumber = args[0];
             DESTINATION = args[1];
             sipTransport = new SIPTransport();
+            //----------------------------------------------
+            sipTransport.PreferIPv6NameResolution = preferIpv6;
+            //---------------------------------------------
             userAgent = new SIPUserAgent(sipTransport, null);
 
             userAgent.ClientCallFailed += (uac, err, resp) =>
@@ -83,10 +92,21 @@ namespace demo
 
             winAudio = new WindowsAudioEndPoint(new AudioEncoder(), deviceOutIndex, deviceInIndex);
 
-            
-
             voipMediaSession = new VoIPMediaSession(new MediaEndPoints { AudioSink = winAudio, AudioSource = winAudio });
             voipMediaSession.OnRtpPacketReceived += OnRtpPacketReceived;
+
+            // If a STUN server hostname has been specified start the STUN client to lookup and periodically 
+            // update the public IP address of the host machine.
+            if (!string.IsNullOrEmpty(stunServer))
+            {
+                _stunClient = new SoftphoneSTUNClient(stunServer);
+                _stunClient.PublicIPAddressDetected += (ip) =>
+                {
+                };
+                _stunClient.Run();
+            }
+
+
 
             // Запускаем процесс с приложением WhatsApp
             _process = new Process();
