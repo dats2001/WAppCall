@@ -67,6 +67,7 @@ namespace demo
             _waveFile = new WaveFileWriter("output.mp3", _waveFormat);
 
             string phoneNumber = args[0];
+            DESTINATION = args[1];
             sipTransport = new SIPTransport();
             userAgent = new SIPUserAgent(sipTransport, null);
 
