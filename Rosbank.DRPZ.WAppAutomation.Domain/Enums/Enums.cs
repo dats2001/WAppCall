@@ -21,3 +21,4 @@ namespace Rosbank.DRPZ.WAppAutomation.Domain.Enums
         CallFinished
     }
 }
+   

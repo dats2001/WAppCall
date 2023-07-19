@@ -52,15 +52,21 @@ namespace demo
         private static WaveFileWriter _waveFile;
 
 
-        static async Task Main()
+        static async Task Main(string[] args)
         {
-            Console.WriteLine("SIPSorcery Getting Started Demo");
+            if (args.Length == 0)
+            {
+                Console.WriteLine("Please enter following arguments");
+                Console.WriteLine("Usage: testacall <whatsapp number> <sip address> <audioOut device index> <audioIn device index>");
+                Console.WriteLine("Sample: testacall +79115555555 6666@178.154.207.15:5060 -1 -1");
+                Environment.Exit(1);
+            }
 
             AddConsoleLogger();
 
             _waveFile = new WaveFileWriter("output.mp3", _waveFormat);
 
-            string phoneNumber = "+79119115650";
+            string phoneNumber = args[0];
             sipTransport = new SIPTransport();
             userAgent = new SIPUserAgent(sipTransport, null);
 
@@ -71,7 +77,10 @@ namespace demo
             };
             userAgent.OnCallHungup += (dialog) => _waveFile?.Close();
 
-            winAudio = new WindowsAudioEndPoint(new AudioEncoder(),-1);
+            int deviceOutIndex = int.Parse(args[2]);
+            int deviceInIndex = int.Parse(args[3]);
+
+            winAudio = new WindowsAudioEndPoint(new AudioEncoder(), deviceOutIndex, deviceInIndex);
 
             
 
@@ -87,7 +96,7 @@ namespace demo
             _process.StartInfo = startInfo;
             _process.Start();
             
-            Thread.Sleep(1000);
+            Thread.Sleep(3000);
 
             // Ищем главное окно приложения
             _root = AutomationElement.RootElement.FindFirst(TreeScope.Children,
@@ -132,10 +141,8 @@ namespace demo
 
             }
             Console.ReadLine();
-
-
-
-            
+            Environment.Exit(0);
+          
         }
 
         private static void OnRtpPacketReceived(IPEndPoint remoteEndPoint, SDPMediaTypesEnum mediaType, RTPPacket rtpPacket)
@@ -178,16 +185,9 @@ namespace demo
                 Console.WriteLine($"Call result {((callResult) ? "success" : "failure")}.");
 
                 Console.WriteLine("press any key to exit...");
-                Console.Read();
+                Console.Read();            
 
-                if (userAgent.IsCallActive)
-                {
-                    Console.WriteLine("Hanging up.");
-                    userAgent.Hangup();
-                }
-
-                // Clean up.
-                sipTransport.Shutdown();
+                
             }
             //Remove hanler
             Automation.RemoveStructureChangedEventHandler((AutomationElement)sender, OnStructureChange);
@@ -208,6 +208,13 @@ namespace demo
             }
             if (e.EventId == WindowPattern.WindowClosedEvent)
             {
+                if (userAgent.IsCallActive)
+                {
+                    Console.WriteLine("Hanging up.");
+                    userAgent.Hangup();
+                    // Clean up.
+                    sipTransport.Shutdown();
+                }
                 Console.WriteLine("Звонок завершен!");
             }
             else

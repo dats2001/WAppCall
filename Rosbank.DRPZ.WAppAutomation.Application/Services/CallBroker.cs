@@ -17,6 +17,7 @@ namespace Rosbank.DRPZ.WAppAutomation.Application.Services
 {
     public interface ICallBroker
     {
+        public WAppCallStatus CallStatus { get; }
         Task WAppCallStatusChanged(WAppCallEventArgs args);
 
         Task CallSipNumber(string phoneNumber);
@@ -34,7 +35,11 @@ namespace Rosbank.DRPZ.WAppAutomation.Application.Services
 
         private readonly Microsoft.Extensions.Logging.ILogger _logger;
 
-        private WAppCallStatus callStatus = WAppCallStatus.Free; 
+        private WAppCallStatus callStatus = WAppCallStatus.Free;
+
+        public WAppCallStatus CallStatus {
+            get { return callStatus; }
+        }
 
         public CallBroker(ILoggerFactory loggerFactory, IWAppDesktopClient desktopClient, IConfiguration configuration)
         {
@@ -84,10 +89,10 @@ namespace Rosbank.DRPZ.WAppAutomation.Application.Services
         /// <returns></returns>
         public async Task CallSipNumber(string sipAddress)
         {
-            //if (string.IsNullOrEmpty(sipAddress))
-            //{
-            //    sipAddress = _configuration["Worker:Sip:Uri"];
-            //}
+            if (string.IsNullOrEmpty(sipAddress))
+            {
+                sipAddress = _configuration["Worker:Sip:Uri"];
+            }
             await _sipTransportManager.InitialiseSIP();
 
             _sipClient = new SIPClient(_sipTransportManager.SIPTransport);
@@ -108,11 +113,11 @@ namespace Rosbank.DRPZ.WAppAutomation.Application.Services
         public async Task CallWhatsAppNumber(string phoneNumber)
         {
             await _desktopClient.Call(phoneNumber);
-            while (callStatus != WAppCallStatus.CallFinished)
-            {
-                await Task.Delay(100);
-            }
-            callStatus = WAppCallStatus.Free;
+            //while (callStatus != WAppCallStatus.CallFinished)
+            //{
+            //    await Task.Delay(100);
+            //}
+            //callStatus = WAppCallStatus.Free;
         }
 
         /// <summary>
@@ -125,17 +130,17 @@ namespace Rosbank.DRPZ.WAppAutomation.Application.Services
             if (arg.Status == Domain.Enums.WAppCallStatus.Calling)
             {
                 // Производим звонок по адресу СИП транка или указанного номера
-                await CallSipNumber(string.Empty);
+                //await CallSipNumber(string.Empty);
                 callStatus = WAppCallStatus.Calling;
             }
             else if (arg.Status == Domain.Enums.WAppCallStatus.CallFinished)
             {
                 // Повесить трубку в активном SIP вызове
-                if (_sipClient.IsCallActive)
-                {
-                    _sipClient.Hangup();
-                }
-                callStatus = WAppCallStatus.CallFinished;
+                //if (_sipClient.IsCallActive)
+                //{
+                //    _sipClient.Hangup();
+                //}
+                //callStatus = WAppCallStatus.CallFinished;
             }
         }
     }

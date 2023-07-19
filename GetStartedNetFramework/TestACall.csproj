@@ -7,7 +7,7 @@
     <ProjectGuid>{203B98E3-ED46-469E-BCB4-61BE9AB6B66E}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <RootNamespace>GetStartedNetFramework</RootNamespace>
-    <AssemblyName>GetStartedNetFramework</AssemblyName>
+    <AssemblyName>testacall</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>

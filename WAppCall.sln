@@ -9,7 +9,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rosbank.DRPZ.WAppAutomation
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rosbank.DRPZ.WAppAutomation.Application", "Rosbank.DRPZ.WAppAutomation.Application\Rosbank.DRPZ.WAppAutomation.Application.csproj", "{D34FB43A-A47B-4002-A1CC-23752F91D91F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GetStartedNetFramework", "GetStartedNetFramework\GetStartedNetFramework.csproj", "{203B98E3-ED46-469E-BCB4-61BE9AB6B66E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestACall", "GetStartedNetFramework\TestACall.csproj", "{203B98E3-ED46-469E-BCB4-61BE9AB6B66E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rosbank.DRPZ.WAutomation.Client", "Rosbank.DRPZ.WAutomation.Client\Rosbank.DRPZ.WAutomation.Client.csproj", "{DA920F49-02CD-4A40-BEDC-19F6057D920B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{203B98E3-ED46-469E-BCB4-61BE9AB6B66E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{203B98E3-ED46-469E-BCB4-61BE9AB6B66E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{203B98E3-ED46-469E-BCB4-61BE9AB6B66E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DA920F49-02CD-4A40-BEDC-19F6057D920B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DA920F49-02CD-4A40-BEDC-19F6057D920B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DA920F49-02CD-4A40-BEDC-19F6057D920B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DA920F49-02CD-4A40-BEDC-19F6057D920B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

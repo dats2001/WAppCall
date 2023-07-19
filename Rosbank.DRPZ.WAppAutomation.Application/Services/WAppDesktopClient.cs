@@ -40,7 +40,7 @@ public class WAppDesktopClient : IWAppDesktopClient
         _logger = loggerFactory.CreateLogger<WAppDesktopClient>();
     }
 
-    private void StartWhatsAppApplication(string appName, string rootElement, int timeoutInMs = 7000)
+    private async Task StartWhatsAppApplication(string appName, string rootElement, int timeoutInMs = 7000)
     {
         //_process = Process.Start(appName);
 
@@ -57,7 +57,7 @@ public class WAppDesktopClient : IWAppDesktopClient
         {
             _root = AutomationElement.RootElement
                 .FindFirst(TreeScope.Children, new PropertyCondition(AutomationElement.NameProperty, rootElement));
-            Thread.Sleep(100);
+            await Task.Delay(1000);
         }
         while (_root == null && _stopwatch.ElapsedMilliseconds < timeoutInMs);
     }
@@ -95,7 +95,7 @@ public class WAppDesktopClient : IWAppDesktopClient
         try
         {
             this.Phone = phone;
-            StartWhatsAppApplication($"whatsapp://send?phone={phone}", "WhatsApp");
+            await StartWhatsAppApplication($"whatsapp://send?phone={phone}", "WhatsApp");
 
             try
             {

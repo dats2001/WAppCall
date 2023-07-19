@@ -2,6 +2,10 @@ using Serilog;
 using Rosbank.DRPZ.WAppAutomation.Worker;
 
 IHost host = Host.CreateDefaultBuilder(args)
+    .UseWindowsService(options =>
+    {
+           options.ServiceName = ".NET WhatsApp Client";
+    })
     .ConfigureAppConfiguration((context, config) =>
     {
         config.Sources.Clear();
@@ -15,20 +19,18 @@ IHost host = Host.CreateDefaultBuilder(args)
     .ConfigureServices((context, services) =>
     {
         var configuration = context.Configuration;
-        services.AddApplicationServices();
+        //services.AddApplicationServices();
         services.AddHostedService<WAppClientCallWorker>();
-        
     })
     .UseSerilog((context, services, configuration) =>
     {
         configuration
-            .Enrich.WithProperty("ApplicationName", "Rosbank.DRPZ.WAppAutomation")
+            .Enrich.WithProperty("ApplicationName", ".NET WhatsApp Client")
             #if DEBUG
             .MinimumLevel.Debug()
             .WriteTo.Console()
             #endif
             .WriteTo.File($"{AppDomain.CurrentDomain.BaseDirectory}/logs/.log", rollingInterval: RollingInterval.Day);
-    })
-    .Build();
+    }).Build();
 
 await host.RunAsync();
