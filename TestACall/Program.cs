@@ -54,6 +54,9 @@ namespace demo
         private static readonly WaveFormat _waveFormat = new WaveFormat(8000, 16, 1);
         private static WaveFileWriter _waveFile;
 
+        private static int deviceOutIndex = -1;
+        private static int deviceInIndex = -1;
+
 
         static async Task Main(string[] args)
         {
@@ -87,13 +90,8 @@ namespace demo
             };
             userAgent.OnCallHungup += (dialog) => _waveFile?.Close();
 
-            int deviceOutIndex = int.Parse(args[2]);
-            int deviceInIndex = int.Parse(args[3]);
-
-            winAudio = new WindowsAudioEndPoint(new AudioEncoder(), deviceOutIndex, deviceInIndex);
-
-            voipMediaSession = new VoIPMediaSession(new MediaEndPoints { AudioSink = winAudio, AudioSource = winAudio });
-            voipMediaSession.OnRtpPacketReceived += OnRtpPacketReceived;
+            deviceOutIndex = int.Parse(args[2]);
+            deviceInIndex = int.Parse(args[3]);
 
             // If a STUN server hostname has been specified start the STUN client to lookup and periodically 
             // update the public IP address of the host machine.
@@ -200,6 +198,11 @@ namespace demo
                     $"{callWindow.Current.AutomationId}, {callWindow.Current.Name}");
                 _isInCall = true;
 
+
+                winAudio = new WindowsAudioEndPoint(new AudioEncoder(), deviceOutIndex, deviceInIndex);
+                voipMediaSession = new VoIPMediaSession(new MediaEndPoints { AudioSink = winAudio, AudioSource = winAudio });
+                voipMediaSession.AcceptRtpFromAny = true;
+                voipMediaSession.OnRtpPacketReceived += OnRtpPacketReceived;
 
                 // Place the call and wait for the result.
                 bool callResult = await userAgent.Call(DESTINATION, null, null, voipMediaSession);
